@@ -28,11 +28,9 @@ class Linear(torch.nn.Module):
         # Create weight param with shape (out_features, in_features)
         self.W = torch.nn.Parameter(torch.empty((out_features, in_features), device=device, dtype=dtype))
         
-        # Initialize with truncated normal distribution
+        # Initialize weights, std = sqrt(sigma^2)
         std = math.sqrt(2.0 / (in_features+out_features))
-        a = -3 * std
-        b = 3 * std
-        torch.nn.init.trunc_normal_(self.W, mean=0.0, std=std, a=a, b=b)
+        torch.nn.init.trunc_normal_(self.W, mean=0.0, std=std, a=-3*std, b=3*std)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Apply the linear transformation to the input."""

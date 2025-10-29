@@ -33,7 +33,7 @@ def run_linear(
     """
     # Create Linear layer and load the provided weights
     layer = Linear(in_features=d_in, out_features=d_out, device=weights.device, dtype=weights.dtype)
-    layer.W.data = weights
+    layer.W.data = weights  # load weights
     return layer(in_features)
 
 
@@ -55,9 +55,9 @@ def run_embedding(
     Returns:
         Float[Tensor, "... d_model"]: Batch of embeddings returned by your Embedding layer.
     """
-    # Create Embedding layer and load the provided weights
+
     layer = Embedding(num_embeddings=vocab_size, embedding_dim=d_model, device=weights.device, dtype=weights.dtype)
-    layer.E.data = weights
+    layer.E.data = weights  # load weights
     return layer(token_ids)
 
 
