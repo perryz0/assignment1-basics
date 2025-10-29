@@ -4,7 +4,7 @@ import math
 import torch
 
 
-class Linear(nn.Module):
+class Linear(torch.nn.Module):
     """
     A Linear layer implementation that performs the transformation y = x @ W.T,
     where W has shape (out_features, in_features).
@@ -26,7 +26,7 @@ class Linear(nn.Module):
         super().__init__()
         
         # Create weight param with shape (out_features, in_features)
-        self.W = nn.Parameter(torch.empty((out_features, in_features), device=device, dtype=dtype))
+        self.W = torch.nn.Parameter(torch.empty((out_features, in_features), device=device, dtype=dtype))
         
         # Initialize with truncated normal distribution
         std = math.sqrt(2.0 / (in_features+out_features))
