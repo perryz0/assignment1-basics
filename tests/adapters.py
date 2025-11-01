@@ -18,6 +18,7 @@ from cse599o_basics.rope import RoPE
 from cse599o_basics.softmax import Softmax
 from cse599o_basics.scaled_dot_product_attention import ScaledDotProductAttention
 from cse599o_basics.multihead_self_attention import MultiHeadSelfAttention
+from cse599o_basics.transformer_block import TransformerBlock
 
 def run_linear(
     d_in: int,
@@ -303,7 +304,30 @@ def run_transformer_block(
         Float[Tensor, "batch sequence_length d_model"] Tensor with the output of
         running the Transformer block on the input features while using RoPE.
     """
-    raise NotImplementedError
+    # Initialize RoPE and transfomrer block
+    rope = RoPE(theta=theta, d_k=d_model // num_heads, max_seq_len=max_seq_len, device=in_features.device)
+    block = TransformerBlock(d_model=d_model, num_heads=num_heads, d_ff=d_ff, rope=rope, device=in_features.device, dtype=in_features.dtype)
+    attn = block.attn
+    ffn = block.ffn
+
+    # Attention weights
+    attn.w_q.data.copy_(weights["attn.q_proj.weight"])
+    attn.w_k.data.copy_(weights["attn.k_proj.weight"])
+    attn.w_v.data.copy_(weights["attn.v_proj.weight"])
+    attn.w_o.data.copy_(weights["attn.output_proj.weight"])
+
+    # Feedforward weights
+    ffn.W1.data.copy_(weights["ffn.w1.weight"])
+    ffn.W2.data.copy_(weights["ffn.w2.weight"])
+    ffn.W3.data.copy_(weights["ffn.w3.weight"])
+
+    # Norm weights
+    block.ln1.weight.data.copy_(weights["ln1.weight"])
+    block.ln2.weight.data.copy_(weights["ln2.weight"])
+
+    # run forward pass
+    token_positions = torch.arange(in_features.shape[1], device=in_features.device)
+    return block(in_features, token_positions)
 
 
 def run_transformer_lm(
