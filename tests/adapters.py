@@ -150,7 +150,14 @@ def run_multihead_self_attention(
         implementation with the given QKV projection weights and input features.
     """
     mhsa = MultiHeadSelfAttention(d_model, num_heads, rope=None, device=in_features.device, dtype=in_features.dtype)
-    mhsa.load_state_dict({'W_q': q_proj_weight, 'W_k': k_proj_weight, 'W_v': v_proj_weight, 'W_o': o_proj_weight})
+
+    # copy weights manually instead of load_state_dict()
+    with torch.no_grad():
+        mhsa.w_q.copy_(q_proj_weight)
+        mhsa.w_k.copy_(k_proj_weight)
+        mhsa.w_v.copy_(v_proj_weight)
+        mhsa.w_o.copy_(o_proj_weight)
+
     return mhsa(in_features)
 
 
@@ -191,9 +198,16 @@ def run_multihead_self_attention_with_rope(
         Float[Tensor, " ... sequence_length d_out"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    mhsa = MultiHeadSelfAttention(d_model, num_heads, rope=RoPE(theta, d_k=d_model, max_seq_len=max_seq_len, device=in_features.device), device=in_features.device, dtype=in_features.dtype)
-    mhsa.load_state_dict({'W_q': q_proj_weight, 'W_k': k_proj_weight, 'W_v': v_proj_weight, 'W_o': o_proj_weight})
-    return mhsa(in_features)
+    rope = RoPE(theta=theta, d_k=d_model // num_heads, max_seq_len=max_seq_len, device=in_features.device)
+    mhsa = MultiHeadSelfAttention(d_model, num_heads, rope=rope, device=in_features.device, dtype=in_features.dtype)
+
+    with torch.no_grad():
+        mhsa.w_q.copy_(q_proj_weight)
+        mhsa.w_k.copy_(k_proj_weight)
+        mhsa.w_v.copy_(v_proj_weight)
+        mhsa.w_o.copy_(o_proj_weight)
+
+    return mhsa(in_features, token_positions)
 
 
 def run_rope(
