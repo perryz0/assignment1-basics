@@ -24,6 +24,7 @@ class Embedding(torch.nn.Module):
         
         # Create embedding matrix
         self.E = torch.nn.Parameter(torch.empty((num_embeddings, embedding_dim), device=device, dtype=dtype))
+        self.weight = self.E
         
         # Initialize weights
         torch.nn.init.trunc_normal_(self.E, mean=0.0, std=1.0, a=-3.0, b=3.0)

@@ -19,6 +19,7 @@ from cse599o_basics.softmax import Softmax
 from cse599o_basics.scaled_dot_product_attention import ScaledDotProductAttention
 from cse599o_basics.multihead_self_attention import MultiHeadSelfAttention
 from cse599o_basics.transformer_block import TransformerBlock
+from cse599o_basics.transformer_lm import TransformerLM
 
 def run_linear(
     d_in: int,
@@ -409,7 +410,28 @@ def run_transformer_lm(
         Float[Tensor, "batch_size sequence_length vocab_size"]: Tensor with the predicted unnormalized
         next-word distribution for each token.
     """
-    raise NotImplementedError
+
+    lm = TransformerLM(vocab_size, context_length, num_layers, d_model, num_heads, d_ff, rope_theta)
+
+    # Token embeddings
+    lm.token_embeddings.E.data.copy_(weights["token_embeddings.weight"])
+
+    # Per-layer weights
+    for i, layer in enumerate(lm.layers):
+        layer.attn.w_q.data.copy_(weights[f"layers.{i}.attn.q_proj.weight"])
+        layer.attn.w_k.data.copy_(weights[f"layers.{i}.attn.k_proj.weight"])
+        layer.attn.w_v.data.copy_(weights[f"layers.{i}.attn.v_proj.weight"])
+        layer.attn.w_o.data.copy_(weights[f"layers.{i}.attn.output_proj.weight"])
+        layer.ln1.weight.data.copy_(weights[f"layers.{i}.ln1.weight"])
+        layer.ln2.weight.data.copy_(weights[f"layers.{i}.ln2.weight"])
+        layer.ffn.W1.data.copy_(weights[f"layers.{i}.ffn.w1.weight"])
+        layer.ffn.W2.data.copy_(weights[f"layers.{i}.ffn.w2.weight"])
+        layer.ffn.W3.data.copy_(weights[f"layers.{i}.ffn.w3.weight"])
+
+    lm.ln_final.weight.data.copy_(weights["ln_final.weight"])
+    lm.lm_head.weight.data.copy_(weights["lm_head.weight"])
+
+    return lm(in_indices)
 
 
 def run_rmsnorm(

@@ -47,7 +47,7 @@ class MultiHeadSelfAttention(torch.nn.Module):
         # Apply RoPE to Q and K if provided
         if self.rope is not None:
             if token_positions is None:
-                token_positions = torch.arange(seq_len, device=x.device)
+                token_positions = torch.arange(seq, device=x.device)
             q = self.rope(q, token_positions)
             k = self.rope(k, token_positions)
 

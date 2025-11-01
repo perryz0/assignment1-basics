@@ -27,6 +27,7 @@ class Linear(torch.nn.Module):
         
         # Create weight param with shape (out_features, in_features)
         self.W = torch.nn.Parameter(torch.empty((out_features, in_features), device=device, dtype=dtype))
+        self.weight = self.W
         
         # Initialize weights, std = sqrt(sigma^2)
         std = math.sqrt(2.0 / (in_features+out_features))
