@@ -106,7 +106,8 @@ def decode(
         token_id = next_token.item()
         generated.append(token_id)
 
-        if token_id == tokenizer.eot_token:
+        # stop if we hit the <|endoftext|> token id
+        if token_id == tokenizer.encode("<|endoftext|>")[0]:
             break
 
         tokens = torch.cat([tokens, next_token.view(1, 1)], dim=1)

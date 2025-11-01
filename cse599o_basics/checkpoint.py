@@ -21,5 +21,6 @@ def load_checkpoint(src, model, optimizer):
 
     checkpoint = torch.load(src, map_location="cpu")
     model.load_state_dict(checkpoint["model_state"])
-    optimizer.load_state_dict(checkpoint["optimizer_state"])
-    return checkpoint["iteration_number"]
+    if optimizer is not None and "optimizer_state" in checkpoint:
+        optimizer.load_state_dict(checkpoint["optimizer_state"])
+    return checkpoint.get("iteration_number", 0)
